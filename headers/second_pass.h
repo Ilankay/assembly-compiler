@@ -13,7 +13,7 @@
  * Date: [Date]
  */
 
-// Structs
+/** Structs*/
 
 /**
  * @brief Structure containing results of the second pass.
@@ -27,7 +27,7 @@ typedef struct SecondPassPack {
     int DCF;                 /**< Data Count Final */
 } SecondPassPack;
 
-// Functions
+/** Functions*/
 
 /**
  * @brief Performs the second pass of the assembly code.
@@ -37,4 +37,4 @@ typedef struct SecondPassPack {
  */
 SecondPassPack second_pass(FirstPassPack fpp, char* filename);
 
-#endif // SECOND_PASS_H
+#endif /** SECOND_PASS_H*/

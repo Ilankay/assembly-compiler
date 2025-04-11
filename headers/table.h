@@ -27,7 +27,7 @@
 #define DEFAULT_SEED 5381          /**< Seed value for the djb2 hash function */
 #define DEFAULT_MULTIPLIER 5       /**< Multiplier used in the djb2 hash function */
 
-// Structs
+/** Structs*/
 
 /**
  * @brief Key-value pair stored in the table.
@@ -52,7 +52,7 @@ typedef struct Node {
  */
 typedef Node** Table;
 
-// Linked list functions
+/** Linked list functions*/
 
 /**
  * @brief Creates a new linked list node with the given TableVal.
@@ -97,7 +97,7 @@ void ll_free(Node* head);
  */
 void ll_add_address(Node* head, int n);
 
-// Hash table functions
+/** Hash table functions*/
 
 /**
  * @brief Hashes a string using the djb2 algorithm.
@@ -138,5 +138,5 @@ const char* table_get(Table t, const char* key);
  */
 int table_get_address(Table t, const char* key);
 
-#endif // TABLE_H
+#endif /** TABLE_H*/
 

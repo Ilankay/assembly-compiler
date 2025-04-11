@@ -1,5 +1,5 @@
 CC = gcc
-# CFLAGS = -ansi -Wall -pedantic -g
+CFLAGS = -ansi -Wall -pedantic -g
 GLOBAL_DEPS = headers/util.h headers/table.h headers/pre_proc.h headers/first_pass.h headers/ins_parse.h headers/second_pass.h
 
 # Object files (based on files in src/)

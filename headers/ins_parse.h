@@ -2,18 +2,18 @@
 #ifndef INS_PARSE_H
 #define INS_PARSE_H
 
-// --- Character Identifiers ---
-#define IMM_ID '#'      // Immediate addressing
-#define REL_ID '&'      // Relative addressing
-#define REG_ID 'r'      // Register addressing
+/** --- Character Identifiers ---*/
+#define IMM_ID '#'      /** Immediate addressing*/
+#define REL_ID '&'      /** Relative addressing*/
+#define REG_ID 'r'      /** Register addressing*/
 
-// --- Addressing Types ---
-#define IMM 0           // Immediate
-#define DIR 1           // Direct
-#define REL 2           // Relative
-#define REG 3           // Register
+/** --- Addressing Types ---*/
+#define IMM 0           /** Immediate*/
+#define DIR 1           /** Direct*/
+#define REL 2           /** Relative*/
+#define REG 3           /** Register*/
 
-// --- ASCII Characters ---
+/** --- ASCII Characters ---*/
 #define NUM_START '0'
 #define NUM_END '9'
 #define NUM_7 '7'
@@ -22,7 +22,7 @@
 #define CHAR_ONE '1'
 #define CHAR_ZERO '0'
 
-// --- Utility Constants ---
+/** --- Utility Constants ---*/
 #define ZERO 0
 #define ONE 1
 #define TWO 2
@@ -31,7 +31,7 @@
 #define TRUE 1
 #define FALSE 0
 
-// --- Sizes and Limits ---
+/** --- Sizes and Limits ---*/
 #define REG_SIZE 2
 #define LINESIZE 80
 #define INSTRUCTION_SIZE 24
@@ -44,7 +44,7 @@
 #define OPERATION_SIZE 2
 #define IMM_SIZE 21
 
-// --- Instruction Structure ---
+/** --- Instruction Structure ---*/
 typedef struct Instruction {
   const char* name;
   int opecode;
@@ -53,7 +53,7 @@ typedef struct Instruction {
   int dest[4];
 } Instruction;
 
-// --- Instruction Set (16 Instructions Total) ---
+/** --- Instruction Set (16 Instructions Total) ---*/
 #define INSTRUCTION_AMNT 16
 #define INSTRUCTIONS \
   {"mov",0,0,{1,1,0,1},{0,1,0,1}}, \
@@ -74,7 +74,7 @@ typedef struct Instruction {
   {"stop",15,0,{0,0,0,0},{0,0,0,0}}
 
 
-// --- Function Declarations ---
+/** --- Function Declarations --- */
 
 /**
  * @brief Determines the addressing method of a given argument string.
@@ -122,7 +122,7 @@ void fill_zeros(char* arr, int amnt);
 char* create_first_word(char* command, char* arg1, char* arg2,int line_number);
 
 /**
- * @brief Creates a word representing the first argument (for immediate addressing).
+ * @brief Creates a word for an argument in the first pass(for immediate addressing).
  * @param arg The argument string.
  * @return A binary string or "0" if no word is needed, or "" if unresolved.
  */
@@ -135,7 +135,14 @@ char* create_arg_word_first(char* arg);
  */
 int is_instruction(char* inst);
 
+/**
+ * @brief creates the word for an argument in the second pass
+ * @param arg the argument string;
+ * @param IC the instruction counter
+ * @param symbol_table the symbol table 
+ * @param line_number the current line number
+ * @return A newly allocated string representing the instruction word in binary.
+ */
 char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_number);
 
-#endif // INS_PARSE_H
-
+#endif 

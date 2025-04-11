@@ -12,11 +12,11 @@
  * Struct to hold the results of the first pass over an assembly file.
  */
 typedef struct FirstPassPack {
-    Table symbol_table;        // Symbol table of labels and their attributes
-    Node* data_list;           // Linked list containing data segment
-    Node* instruction_list;    // Linked list containing instruction segment
-    int ICF;                   // Instruction Counter Final
-    int DCF;                   // Data Counter Final
+    Table symbol_table;        /** Symbol table of labels and their addresses*/
+    Node* data_list;           /** Linked list containing data segment*/
+    Node* instruction_list;    /** Linked list containing instruction segment*/
+    int ICF;                   /** Instruction Counter Final*/
+    int DCF;                   /** Data Counter Final*/
 } FirstPassPack;
 
 /**
@@ -80,4 +80,4 @@ void store_symbol(Table t, char* symbol, int IC, char* type,int line_num);
  */
 FirstPassPack first_pass(char* filename);
 
-#endif // FIRST_PASS_H
+#endif /** FIRST_PASS_H*/

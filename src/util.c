@@ -1,7 +1,6 @@
 #include "../headers/util.h"
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 int is_seperator(char c){
@@ -53,15 +52,10 @@ char* get_word(char* inst,int ind){
   }
   end_ind = i;
   len = end_ind-start_ind;
-  word = (char*)calloc(len+1,sizeof(char)); //remember to free the word!!!!!
-
+  word = (char*)calloc(len+1,sizeof(char)); 
   for(i=start_ind;i<end_ind;i++){
     word[i-start_ind] = inst[i];
   }
   return word;
 }
 
-// int main(){
-//   char* inst = "  bne break         ";
-//   printf("%s\n",get_word(inst,2));
-// }

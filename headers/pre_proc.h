@@ -54,4 +54,4 @@ void add_macro(Table macro_table, Node* line_list, int line_count, char* name);
  */
 int pre_proc(const char* filename);
 
-#endif // PRE_PROC_H
+#endif /** PRE_PROC_H*/
