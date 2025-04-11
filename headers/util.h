@@ -17,6 +17,12 @@
 #define CHAR_ZERO '0'
 #define CHAR_ONE '1'
 
+#define STRING ".string"
+#define DATA ".data"
+#define CODE ".code"
+#define EXTERN ".extern"
+#define ENTRY ".entry"
+
 char* get_word(char* inst, int ind);
 
 void convert_to_bits(char *array, int val, int len);

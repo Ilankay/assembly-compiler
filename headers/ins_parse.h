@@ -1,4 +1,4 @@
-
+#include "../headers/table.h"
 #ifndef INS_PARSE_H
 #define INS_PARSE_H
 
@@ -59,15 +59,15 @@ typedef struct Instruction {
   {"mov",0,0,{1,1,0,1},{0,1,0,1}}, \
   {"cmp",1,0,{1,1,0,1},{1,1,0,1}}, \
   {"add",2,1,{1,1,0,1},{0,1,0,1}}, \
-  {"sub",3,2,{1,1,0,1},{0,1,0,1}}, \
-  {"lea",4,0,{0,1,0,0},{0,1,0,1}}, \
+  {"sub",2,2,{1,1,0,1},{0,1,0,1}}, \
+  {"lea",4,0,{0,1,0,1},{0,1,0,1}}, \
   {"clr",5,1,{0,0,0,0},{0,1,0,1}}, \
-  {"not",6,2,{0,0,0,0},{0,1,0,1}}, \
-  {"inc",7,3,{0,0,0,0},{0,1,0,1}}, \
-  {"dec",8,4,{0,0,0,0},{0,1,0,1}}, \
+  {"not",5,2,{0,0,0,0},{0,1,0,1}}, \
+  {"inc",5,3,{0,0,0,0},{0,1,0,1}}, \
+  {"dec",5,4,{0,0,0,0},{0,1,0,1}}, \
   {"jmp",9,1,{0,0,0,0},{0,1,1,0}}, \
-  {"bne",10,2,{0,0,0,0},{0,1,1,0}}, \
-  {"jsr",11,3,{0,0,0,0},{0,1,1,0}}, \
+  {"bne",9,2,{0,0,0,0},{0,1,1,0}}, \
+  {"jsr",9,3,{0,0,0,0},{0,1,1,0}}, \
   {"red",12,0,{0,0,0,0},{0,1,0,1}}, \
   {"prn",13,0,{0,0,0,0},{1,1,0,1}}, \
   {"rts",14,0,{0,0,0,0},{0,0,0,0}}, \
@@ -119,7 +119,7 @@ void fill_zeros(char* arr, int amnt);
  * @param arg2 The second operand.
  * @return A newly allocated string representing the instruction word in binary.
  */
-char* create_first_word(char* command, char* arg1, char* arg2);
+char* create_first_word(char* command, char* arg1, char* arg2,int line_number);
 
 /**
  * @brief Creates a word representing the first argument (for immediate addressing).
@@ -134,6 +134,8 @@ char* create_arg_word_first(char* arg);
  * @return boolean value of 1 if the word is an instruction and 0 if not
  */
 int is_instruction(char* inst);
+
+char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_number);
 
 #endif // INS_PARSE_H
 

@@ -7,19 +7,25 @@
  * @file table.h
  * @brief Hash table implementation with separate chaining using linked lists.
  *
- * Description: 
- *    [Add a short description of the purpose of this module]
+ * This module implements a hash table with separate chaining using linked lists to handle collisions.
+ * The table is used to store key-value pairs, where the keys are strings, and the values are associated 
+ * with specific data, like addresses and symbols.
  *
  * Usage:
- *    [Example usage or basic instructions]
+ *    - Create a table using create_table().
+ *    - Add key-value pairs with table_add().
+ *    - Retrieve values with table_get().
+ *    - Retrieve addresses with table_get_address().
+ *    - Free memory with ll_free().
+ *    - Hash table size can be adjusted via the DEFAULT_TABLE_SIZE macro.
  *
  * Author: [Your Name]
  * Date: [Date]
  */
 
-#define DEFAULT_TABLE_SIZE 10
-#define DEFAULT_SEED 5381
-#define DEFAULT_MULTIPLIER 5
+#define DEFAULT_TABLE_SIZE 10      /**< Default size of the hash table */
+#define DEFAULT_SEED 5381          /**< Seed value for the djb2 hash function */
+#define DEFAULT_MULTIPLIER 5       /**< Multiplier used in the djb2 hash function */
 
 // Structs
 
@@ -27,17 +33,18 @@
  * @brief Key-value pair stored in the table.
  */
 typedef struct TableVal {
-    int address;
-    char* val;
-    char* key;
+    int address;  /**< Address associated with the symbol */
+    char* val;    /**< Value associated with the key (e.g., symbol type) */
+    char* key;    /**< Key used to identify the entry (e.g., symbol name) */
+    int line_num;
 } TableVal;
 
 /**
  * @brief Node for the linked list used in separate chaining.
  */
 typedef struct Node {
-    TableVal val;
-    struct Node* next;
+    TableVal val;        /**< The key-value pair */
+    struct Node* next;   /**< Pointer to the next node in the linked list */
 } Node;
 
 /**
@@ -70,10 +77,28 @@ void add_node(Node* head, TableVal val);
 const char* ll_get(Node* head, const char* key);
 
 /**
- * @brief frees the memory allocated to the linked list
- * @param head the head of the linked list.
+ * @brief Retrieves the address associated with a key in the linked list.
+ * @param head The head of the linked list.
+ * @param key The key to search for.
+ * @return The address associated with the key, or -1 if not found.
+ */
+int ll_get_address(Node* head, const char* key);
+
+/**
+ * @brief Frees the memory allocated to the linked list.
+ * @param head The head of the linked list.
  */
 void ll_free(Node* head);
+
+/**
+ * @brief Adds an offset to the address of each node in the linked list.
+ * @param head The head of the linked list.
+ * @param n The offset to add to the address.
+ */
+void ll_add_address(Node* head, int n);
+
+// Hash table functions
+
 /**
  * @brief Hashes a string using the djb2 algorithm.
  * @param str The input string to hash.
@@ -85,25 +110,33 @@ unsigned long djb2_hash(const char *str);
  * @brief Creates and initializes a new hash table.
  * @return A new Table with all buckets initialized to NULL.
  */
+
 Table create_table();
 
 /**
  * @brief Adds a key-value pair to the hash table.
  * @param t The hash table.
  * @param key The key string.
- * @param val The value string. for the symbol tables this will be where the type of symbol is stored.
- * @param address The address associated with the code. 
+ * @param val The value string (e.g., symbol type).
+ * @param address The address associated with the code or symbol.
  */
-void table_add(Table t, char* key, char* val, int address);
+int table_add(Table t, char* key, char* val, int address);
 
 /**
  * @brief Retrieves the value associated with a key in the hash table.
  * @param t The hash table.
  * @param key The key string.
- 
  * @return The value associated with the key, or an empty string if not found.
  */
 const char* table_get(Table t, const char* key);
+
+/**
+ * @brief Retrieves the address associated with a key in the hash table.
+ * @param t The hash table.
+ * @param key The key string.
+ * @return The address associated with the key, or -1 if not found.
+ */
+int table_get_address(Table t, const char* key);
 
 #endif // TABLE_H
 

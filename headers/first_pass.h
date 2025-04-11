@@ -8,13 +8,6 @@
 #include "util.h"
 #include "pre_proc.h"
 #include "ins_parse.h"
-
-// Assembly directive keywords
-#define STRING ".string"
-#define DATA ".data"
-#define CODE ".code"
-#define EXTERN ".external"
-
 /**
  * Struct to hold the results of the first pass over an assembly file.
  */
@@ -46,7 +39,7 @@ int is_valid_symbol(const char* word);
  * @param arg2 Second argument.
  * @return Updated instruction counter after storing the instruction.
  */
-int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2);
+int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2,int line_number);
 
 /**
  * Parses and stores data values from a .data directive line into the data list.
@@ -76,7 +69,7 @@ int store_string(Node* data_list, char* line, int DC);
  * @param IC Address to associate with the symbol.
  * @param type Section type (e.g., .data, .code, .external).
  */
-void store_symbol(Table t, char* symbol, int IC, char* type);
+void store_symbol(Table t, char* symbol, int IC, char* type,int line_num);
 
 /**
  * Performs the first pass over an assembly source file.

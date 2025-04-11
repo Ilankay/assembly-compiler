@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "../headers/ins_parse.h"
 #include "../headers/table.h"
+#include "../headers/util.h"
 
 int get_operator(char* arg){
   int i;
@@ -14,7 +15,7 @@ int get_operator(char* arg){
         num_str=&arg[TWO];
       }
       else{
-        break;
+        return DIR;
       }
 
       for (i=ZERO;i<strlen(num_str);i++){
@@ -42,18 +43,11 @@ int get_operator(char* arg){
   }
 }
 
-void convert_to_bits(char *array, int val, int len){
-  int i;
-  for (i = len-ONE; i >= ZERO; i--) {
-    array[len-ONE-i]=(val & (ONE << i)) ? CHAR_ONE : CHAR_ZERO;
-  }
-}
 
 void convert_register(char* array, char reg){
   int reg_num;
   int i;
   reg_num = reg-NUM_START;
-  printf("%d\n",reg_num);
   for (i = REG_VAL_SIZE-ONE; i >= ZERO; i--) {
     array[REG_VAL_SIZE-ONE-i]=(reg_num & (ONE << i)) ? CHAR_ONE : CHAR_ZERO;
   }
@@ -75,12 +69,15 @@ void fill_zeros(char* arr, int amnt){
   return;
 }
 
-char* create_first_word(char* command,char* arg1,char* arg2){
+char* create_first_word(char* command,char* arg1,char* arg2,int line_number){
   char* instruction;
   int opecode;
+  int funct;
   int i;
   int oparg1;
+  int* dest;
   int oparg2;
+  int* origin;
   Instruction ins_list[INSTRUCTION_AMNT] = {INSTRUCTIONS};
   instruction = calloc(INSTRUCTION_SIZE+1,sizeof(char));
   /**
@@ -91,38 +88,64 @@ char* create_first_word(char* command,char* arg1,char* arg2){
   for(i=0;i<INSTRUCTION_AMNT;i++){
     if(strcmp(ins_list[i].name,command)==0){
       opecode = ins_list[i].opecode;
+      funct = ins_list[i].funct;
+      dest = ins_list[i].dest;
+      origin = ins_list[i].origin;
     }
   }
   if(opecode==-1){
+    printf("line: %d ,Error: Invalid instruction\n",line_number);
     return instruction;
   }
   convert_to_bits(instruction, opecode,OPECODE_SIZE);
 
-  convert_to_bits(&instruction[FUNCT_INDEX],ins_list[opecode].funct,FUNCT_SIZE);
+  convert_to_bits(&instruction[FUNCT_INDEX],funct,FUNCT_SIZE);
 
-  instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO+ONE;
+  instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO;
   instruction[INSTRUCTION_SIZE-ONE-ONE]=CHAR_ZERO;
-  instruction[INSTRUCTION_SIZE-ONE-ONE-ONE]=CHAR_ZERO;
+  instruction[INSTRUCTION_SIZE-ONE-ONE-ONE]=CHAR_ZERO+ONE;
   /**
    * handle arguments
   */
-  if(strlen(arg1)==0){
+  
+  if(strlen(arg2)==0 && strlen(arg1)==0){
     return instruction;
   }
+  
+  if(strlen(arg2)==0){
+      oparg2 = get_operator(arg1);
+    if (dest[oparg2]==0){
+      printf("line: %d, Error: invalid operator for second instruction\n", line_number);
+      return instruction;
+    }
+    convert_to_bits(&instruction[REG1_INDEX+INS_REG_SIZE],oparg2,OPERATION_SIZE);
+    if(oparg2==3){
+      convert_register(&instruction[REG1_INDEX+INS_REG_SIZE+OPERATION_SIZE], arg1[ONE]);
+    }
+    return instruction;
+  }
+
   oparg1 = get_operator(arg1);
+  if (origin[oparg1]==0){
+    printf("line: %d, Error: invalid operator for first instruction\n", line_number);
+    return instruction;
+  }
   convert_to_bits(&instruction[REG1_INDEX],oparg1,OPERATION_SIZE);
   if(oparg1==3){
     convert_register(&instruction[REG1_INDEX+OPERATION_SIZE], arg1[ONE]);
   }
 
-  if(strlen(arg2)==0){
+  oparg2 = get_operator(arg2);
+  if (dest[oparg2]==0){
+    printf("line: %d, Error: invalid operator for second instruction\n", line_number);
     return instruction;
   }
-  oparg2 = get_operator(arg2);
   convert_to_bits(&instruction[REG1_INDEX+INS_REG_SIZE],oparg2,OPERATION_SIZE);
   if(oparg2==3){
     convert_register(&instruction[REG1_INDEX+INS_REG_SIZE+OPERATION_SIZE], arg2[ONE]);
   }
+
+
   return instruction;
 }
 char* create_arg_word_first(char* arg){
@@ -132,7 +155,6 @@ char* create_arg_word_first(char* arg){
   */
   char* instruction;
   int oparg1;
-  const char* num_string;
   int num;
 
   if (strlen(arg)==0){
@@ -143,9 +165,9 @@ char* create_arg_word_first(char* arg){
   oparg1 = get_operator(arg);
   switch(oparg1){
     case IMM:
-      instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO+ONE;
+      instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO;
       instruction[INSTRUCTION_SIZE-ONE-ONE]=CHAR_ZERO;
-      instruction[INSTRUCTION_SIZE-ONE-ONE-ONE]=CHAR_ZERO;
+      instruction[INSTRUCTION_SIZE-ONE-ONE-ONE]=CHAR_ZERO+ONE;
       num = atoi(&arg[1]);
       convert_to_bits(instruction,num,IMM_SIZE);
       return instruction;
@@ -154,10 +176,55 @@ char* create_arg_word_first(char* arg){
     default:
       return "";
   }
-
-
-  
   return instruction;
+}
+
+char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_number){
+  char* instruction;
+  int oparg;
+  int num;
+  const char* type;
+
+  if (strlen(arg)==0){
+    return "0";
+  }
+  instruction = calloc(INSTRUCTION_SIZE+1,sizeof(char));
+  fill_zeros(instruction,INSTRUCTION_SIZE);
+  oparg = get_operator(arg);
+  switch(oparg){
+    case DIR:
+      num = table_get_address(symbol_table, arg);
+      if(num<0){
+        printf("Line: %d, Error: not a known symbol\n",line_number);
+      }
+      type = table_get(symbol_table, arg);
+      if (strcmp(type,EXTERN)==0){
+        instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO+ONE;
+        instruction[INSTRUCTION_SIZE-ONE-ONE]=CHAR_ZERO;
+        instruction[INSTRUCTION_SIZE-ONE-ONE-ONE]=CHAR_ZERO;
+      }
+      else{
+        instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO;
+        instruction[INSTRUCTION_SIZE-ONE-ONE]=CHAR_ZERO+ONE;
+        instruction[INSTRUCTION_SIZE-ONE-ONE-ONE]=CHAR_ZERO;
+      }
+      convert_to_bits(instruction, num, IMM_SIZE);
+      return instruction;
+    
+    case REL:
+      num = table_get_address(symbol_table, &arg[1]);
+      if(num<0){
+        printf("Line: %d, Error: not a known symbol\n",line_number);
+      }
+      num = (num+ONE)-IC;
+      instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO;
+      instruction[INSTRUCTION_SIZE-ONE-ONE]=CHAR_ZERO;
+      instruction[INSTRUCTION_SIZE-ONE-ONE-ONE]=CHAR_ZERO+ONE;
+      convert_to_bits(instruction, num, IMM_SIZE);
+      return instruction;
+    default:
+      return "";
+  }
 }
 int is_instruction(char* inst){
   Instruction ins_list[INSTRUCTION_AMNT] = {INSTRUCTIONS};

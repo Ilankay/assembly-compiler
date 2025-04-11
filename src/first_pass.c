@@ -23,13 +23,13 @@ int is_valid_symbol(const char* word){
   return TRUE;
 }
 
-int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2){
+int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2,int line_number){
   char* instruction;
   char* argline1;
   char* argline2;
   TableVal tv;
 
-  instruction = create_first_word(inst, arg1, arg2);
+  instruction = create_first_word(inst, arg1, arg2,line_number);
   tv.address = IC;
   tv.key = "";
   tv.val = instruction;
@@ -42,6 +42,7 @@ int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, ch
     tv.address = IC;
     tv.key = "";
     tv.val = arg1;
+    tv.line_num = line_number;
     add_node(instruction_list,tv);
     IC++;
   }
@@ -49,6 +50,7 @@ int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, ch
     tv.address = IC;
     tv.key = "";
     tv.val = argline1;
+    add_node(instruction_list,tv);
     IC++;
   }
 
@@ -57,15 +59,18 @@ int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, ch
     tv.address = IC;
     tv.key = "";
     tv.val = arg2;
+    tv.line_num = line_number;
     add_node(instruction_list,tv);
+    IC++;
   }
   else if(strlen(argline2)!=ONE){
     tv.address = IC;
     tv.key = "";
     tv.val = argline2;
+    add_node(instruction_list,tv);
+    IC++;
   }
-  free(argline1);
-  free(argline2);
+
   return IC;
 }
 
@@ -74,13 +79,17 @@ int store_data(Node* data_list, char* line, int DC){
   int word_count;
   char num_bits[INSTRUCTION_SIZE+1];
   TableVal tv;
-
+  
+  num_bits[INSTRUCTION_SIZE] = '\0';
   word_count = 0;
   word = get_word(line,word_count);
+  if(is_valid_symbol(word)){
+    word_count++;
+  }
   if(strcmp(word,DATA)==1){
     word_count++;
   }
-  word_count++;
+  word_count= word_count+1;
 
   while(strlen((word=get_word(line, word_count)))!=0){
     convert_to_bits(num_bits,atoi(word),INSTRUCTION_SIZE);
@@ -96,33 +105,45 @@ int store_data(Node* data_list, char* line, int DC){
 
 int store_string(Node* data_list, char* line, int DC){
   char c;
+  TableVal tv;
   int i=0;
   char num_bits[INSTRUCTION_SIZE+1];
-  TableVal tv;
-  
-  while((c=line[i])!='"'){
+  int max = LINE_SIZE;
+  num_bits[INSTRUCTION_SIZE]='\0'; 
+  while((c=line[i])!='"' && i<max){
     i++;
   }
   i++;
-  while((c=line[i])!='"'){
+  while((c=line[i])!='"' && i<max){
     convert_to_bits(num_bits,(int) c,INSTRUCTION_SIZE);
     tv.address = DC;
     tv.key = "",
     tv.val=num_bits;
     add_node(data_list,tv);
     DC++;
+    i++;
   }
+  convert_to_bits(num_bits,ZERO,INSTRUCTION_SIZE);
+  tv.address = DC;
+  tv.key = "",
+  tv.val=num_bits;
+  add_node(data_list,tv);
+  DC++;
+  i++;
   return DC;
 }
 
-void store_symbol(Table t, char* symbol, int IC, char* type){
-  table_add(t, symbol, type, IC);
+void store_symbol(Table t, char* symbol, int IC, char* type,int line_num){
+  if(table_add(t, symbol, type, IC)==0){
+    printf("Line %d, Error: symbol already defined\n",line_num);
+  }
 }
 
 FirstPassPack first_pass(char* filename){
   Node *instruction_list;
   Node *data_list;
   Table symbol_table;
+  char am_filename[MAX_FILENAME];
   FILE *am_file;
   int IC;
   int DC;
@@ -131,24 +152,29 @@ FirstPassPack first_pass(char* filename){
   char line[LINE_SIZE];
   int is_symbol;
   char* word;
-  char* symbol = "";
+  char symbol[LINE_SIZE];
   char* arg1;
   char* arg2;
   FirstPassPack fpp;
-
+  int line_number = 0;
+  Node* curr;
+  int i;
+  
   IC = 100;
   DC = 0;
   is_symbol = FALSE;
-  am_file = fopen(filename,"r");
+  strcpy(am_filename,filename);
+  strcat(am_filename,".am");
+  am_file = fopen(am_filename,"r");
   tv.val="";
   tv.key="";
   tv.address=0;
   symbol_table = create_table();
-
   data_list = create_node(tv);
   instruction_list = create_node(tv);
   
   while (fgets(line, sizeof(line), am_file)) {
+    line_number++;
     word_count=ZERO;
     word = get_word(line, word_count);
     if(strlen(word)==0){
@@ -163,15 +189,20 @@ FirstPassPack first_pass(char* filename){
     word = get_word(line, word_count);
     if(strcmp(word,DATA)==0){
       if(is_symbol){
-        store_symbol(symbol_table, symbol, DC, DATA);
+        store_symbol(symbol_table, symbol, DC, DATA,line_number);
+        is_symbol=FALSE;
       }
       DC = store_data(data_list, line,DC);
       word_count = ZERO;
       continue;
     }
+    if(strcmp(word,ENTRY)==0){
+      continue;
+    }
     if(strcmp(word,STRING)==0){
       if(is_symbol){
-        store_symbol(symbol_table, symbol, DC, DATA);
+        store_symbol(symbol_table, symbol, DC, DATA,line_number);
+        is_symbol=FALSE;
       }
       DC = store_string(data_list,line,DC);
       word_count = ZERO;
@@ -180,15 +211,17 @@ FirstPassPack first_pass(char* filename){
     if(strcmp(word,EXTERN)==0){
       word_count++;
       strcpy(symbol,get_word(line, word_count));
-      store_symbol(symbol_table, symbol, ZERO, EXTERN);
+      store_symbol(symbol_table, symbol, ZERO, EXTERN,line_number);
+      is_symbol=FALSE;
       word_count = ZERO;
       continue;
     }
     if(is_symbol){
-      store_symbol(symbol_table,symbol,IC,CODE); // add error if exists
+      store_symbol(symbol_table,symbol,IC,CODE,line_number); 
+      is_symbol=FALSE;
     }
     if(!is_instruction(word)){
-      printf("line %d: not a valid instruction",IC);
+      printf("Line %d, Error: not a valid instruction\n",line_number);
       
     }
     word_count++;
@@ -196,11 +229,24 @@ FirstPassPack first_pass(char* filename){
     word_count++;
     arg2 = get_word(line,word_count);
 
-    IC = store_instruction(instruction_list,IC,word,arg1,arg2);
+    IC = store_instruction(instruction_list,IC,word,arg1,arg2,line_number);
 
   }
   fpp.instruction_list=instruction_list;
   fpp.symbol_table=symbol_table;
+  /*
+    * adding FIC to all the data
+  */
+  for(i=0;i<DEFAULT_TABLE_SIZE;i++){
+    curr = symbol_table[i];
+    while (curr != NULL){
+      if(strcmp(curr->val.val,DATA)==0){
+        curr->val.address = curr->val.address+IC;
+      }
+      curr = curr->next;
+    }
+  } 
+  ll_add_address(data_list,IC);
   fpp.data_list=data_list;
   fpp.ICF=IC;
   fpp.DCF=DC;

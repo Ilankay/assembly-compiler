@@ -1,10 +1,9 @@
-# Compilation macros
 CC = gcc
-CFLAGS = -ansi -Wall -pedantic -g
-GLOBAL_DEPS = headers/util.h headers/table.h headers/errors.h headers/pre_proc.h headers/first_pass.h headers/ins_parse.h
+# CFLAGS = -ansi -Wall -pedantic -g
+GLOBAL_DEPS = headers/util.h headers/table.h headers/pre_proc.h headers/first_pass.h headers/ins_parse.h headers/second_pass.h
 
 # Object files (based on files in src/)
-EXE_DEPS = assembler.o util.o table.o pre_proc.o first_pass.o ins_parse.o errors.o
+EXE_DEPS = assembler.o util.o table.o pre_proc.o first_pass.o ins_parse.o second_pass.o
 
 # Executable
 assembler: $(EXE_DEPS) $(GLOBAL_DEPS)
@@ -28,8 +27,9 @@ first_pass.o: src/first_pass.c $(GLOBAL_DEPS)
 ins_parse.o: src/ins_parse.c $(GLOBAL_DEPS)
 	$(CC) -c src/ins_parse.c $(CFLAGS) -o $@
 
-errors.o: src/errors.c $(GLOBAL_DEPS)
-	$(CC) -c src/errors.c $(CFLAGS) -o $@
+second_pass.o: src/second_pass.c $(GLOBAL_DEPS)
+	$(CC) -c src/second_pass.c $(CFLAGS) -o $@
 
 clean:
-	rm -rf *.o assembler *.am *.ob *.ent *.ext
+	rm -f *.o assembler tests/*.am tests/*.ob tests/*.ent tests/*.ext
+

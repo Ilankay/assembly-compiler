@@ -7,7 +7,7 @@
 
 int is_valid_macro(const char* word){
   int i;
-  const char* invalid_names[INSTRUCTION_AMNT+DECORATOR_AMNT+2] =  {INSTRUCTION_LIST,DECORATOR_LIST,MACRO_START,MACRO_END};
+  const char* invalid_names[INSTRUCTION_AMNT+DECORATOR_AMNT+2] = {INSTRUCTION_LIST,DECORATOR_LIST,MACRO_START,MACRO_END};
   
   for(i=0; i<INSTRUCTION_AMNT+DECORATOR_AMNT;i++){
     if(strcmp(word, invalid_names[i])==0){
@@ -36,38 +36,37 @@ int pre_proc(const char* filename){
   FILE *am_file;
   char line[LINE_SIZE];
   char am_filename[MAX_FILENAME];
+  char as_filename[MAX_FILENAME];
   char* word0;
   char* macro_name;
   char* word2;
   int macro_flag;
-  int len;
 
   int line_count;
   Node* line_list;
   TableVal line_val; 
 
   Table macro_table;
-  //alter the name of the file
-  strncpy(am_filename, filename, sizeof(am_filename)-1);
-  am_filename[sizeof(am_filename)-1] = '\0';
 
-  len = strlen(am_filename);
-  if (len >= 3 && strcmp(am_filename + len - 3, ".as") == 0) {
-    am_filename[len-1] = 'm';
-  } else {
-    if (len + 3 < sizeof(am_filename))
-      strcat(am_filename, ".am");
-  }
-  // open files
-  as_file = fopen(filename,"r");
+  /**
+  * alter the name of the file
+  */
+  strcpy(am_filename, filename);
+  strcpy(as_filename,filename);
+
+  strcat(as_filename,".as");
+  strcat(am_filename,".am");
+
+  as_file = fopen(as_filename,"r");
   if (as_file == NULL){
-    printf("failiure");//add error handling
+    printf("Error opening file: %s, process aborted\n",as_filename);
+    return 0;
   }
   am_file = fopen(am_filename,"w");
-  if (am_file == NULL){
-    printf("failiure");//add error handling
-  }
-  //start loop
+
+  /**
+  * start loop
+  */
   macro_flag = FALSE;
   macro_table = create_table();
   line_count=0;
@@ -84,7 +83,8 @@ int pre_proc(const char* filename){
       line_count=1;
       macro_flag=TRUE;
       line_val.val = "";
-      line_val.key = NULL;
+      line_val.key = "";
+      line_val.address=0;
       line_list = create_node(line_val);
     }
 
@@ -99,7 +99,7 @@ int pre_proc(const char* filename){
 
       strcpy(line_val.val,line);
 
-      line_val.key = NULL;
+      line_val.key = "";
       add_node(line_list,line_val);
     }
     else{
@@ -109,12 +109,9 @@ int pre_proc(const char* filename){
 
 
   }
-  free(word0);
-  free(macro_name);
-  free(word2);
   fclose(am_file);
   fclose(as_file); 
-  return 0;
+  return 1;
 }
 
 
