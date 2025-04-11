@@ -23,16 +23,17 @@ int is_valid_symbol(const char* word){
   return TRUE;
 }
 
-int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2,int line_number){
+int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2,int line_number,int* continue_flag){
   char* instruction;
   char* argline1;
   char* argline2;
   TableVal tv;
 
-  instruction = create_first_word(inst, arg1, arg2,line_number);
+  instruction = create_first_word(inst, arg1, arg2,line_number,continue_flag);
   tv.address = IC;
   tv.key = "";
   tv.val = instruction;
+  tv.line_num = line_number;
   add_node(instruction_list,tv);
   
   IC++;
@@ -50,6 +51,7 @@ int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, ch
     tv.address = IC;
     tv.key = "";
     tv.val = argline1;
+    tv.line_num = line_number;
     add_node(instruction_list,tv);
     IC++;
   }
@@ -67,6 +69,7 @@ int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, ch
     tv.address = IC;
     tv.key = "";
     tv.val = argline2;
+    tv.line_num = line_number;
     add_node(instruction_list,tv);
     IC++;
   }
@@ -133,13 +136,14 @@ int store_string(Node* data_list, char* line, int DC){
   return DC;
 }
 
-void store_symbol(Table t, char* symbol, int IC, char* type,int line_num){
-  if(table_add(t, symbol, type, IC)==0){
+void store_symbol(Table t, char* symbol, int IC, char* type,int line_num, int* continue_flag){
+  if(table_add_line_number(t, symbol, type, IC,line_num)==0){
     printf("Line %d, Error: symbol already defined\n",line_num);
+    *continue_flag = FALSE;
   }
 }
 
-FirstPassPack first_pass(char* filename){
+FirstPassPack first_pass(char* filename, int* continue_flag){
   Node *instruction_list;
   Node *data_list;
   Table symbol_table;
@@ -189,7 +193,7 @@ FirstPassPack first_pass(char* filename){
     word = get_word(line, word_count);
     if(strcmp(word,DATA)==0){
       if(is_symbol){
-        store_symbol(symbol_table, symbol, DC, DATA,line_number);
+        store_symbol(symbol_table, symbol, DC, DATA,line_number, continue_flag);
         is_symbol=FALSE;
       }
       DC = store_data(data_list, line,DC);
@@ -201,7 +205,7 @@ FirstPassPack first_pass(char* filename){
     }
     if(strcmp(word,STRING)==0){
       if(is_symbol){
-        store_symbol(symbol_table, symbol, DC, DATA,line_number);
+        store_symbol(symbol_table, symbol, DC, DATA,line_number, continue_flag);
         is_symbol=FALSE;
       }
       DC = store_string(data_list,line,DC);
@@ -211,25 +215,25 @@ FirstPassPack first_pass(char* filename){
     if(strcmp(word,EXTERN)==0){
       word_count++;
       strcpy(symbol,get_word(line, word_count));
-      store_symbol(symbol_table, symbol, ZERO, EXTERN,line_number);
+      store_symbol(symbol_table, symbol, ZERO, EXTERN,line_number, continue_flag);
       is_symbol=FALSE;
       word_count = ZERO;
       continue;
     }
     if(is_symbol){
-      store_symbol(symbol_table,symbol,IC,CODE,line_number); 
+      store_symbol(symbol_table,symbol,IC,CODE,line_number, continue_flag); 
       is_symbol=FALSE;
     }
     if(!is_instruction(word)){
       printf("Line %d, Error: not a valid instruction\n",line_number);
-      
+      *continue_flag=FALSE;
     }
     word_count++;
     arg1 = get_word(line, word_count);
     word_count++;
     arg2 = get_word(line,word_count);
 
-    IC = store_instruction(instruction_list,IC,word,arg1,arg2,line_number);
+    IC = store_instruction(instruction_list,IC,word,arg1,arg2,line_number,continue_flag);
 
   }
   fpp.instruction_list=instruction_list;

@@ -6,6 +6,7 @@
 
 Node* create_node(TableVal val){
     Node* new_node = (Node*)malloc(sizeof(Node));
+    new_node->val.line_num=val.line_num;
     new_node->val.address = val.address;
     new_node->val.val = (char*)malloc(strlen(val.val) + 1);
     strcpy(new_node->val.val,val.val);
@@ -105,6 +106,28 @@ int table_add(Table t, char* key, char* val, int address){
   table_val.key = key;
   table_val.val = val;
   table_val.address = address;
+  hash = djb2_hash(table_val.key);
+  index = (int) (hash%DEFAULT_TABLE_SIZE);
+  if (t[index] == NULL){
+    Node* n = create_node(table_val);
+    t[index] = n;
+  }
+  else{
+    add_node(t[index], table_val);
+  }
+  return ONE;
+}
+int table_add_line_number(Table t, char* key, char* val, int address, int line_num){
+  TableVal table_val;
+  unsigned long hash;
+  int index;
+  if(strlen(table_get(t,key))!=0){
+    return 0;
+  }
+  table_val.key = key;
+  table_val.val = val;
+  table_val.address = address;
+  table_val.line_num = line_num;
   hash = djb2_hash(table_val.key);
   index = (int) (hash%DEFAULT_TABLE_SIZE);
   if (t[index] == NULL){

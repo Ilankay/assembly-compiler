@@ -31,7 +31,7 @@ void add_macro(Table macro_table, Node* line_list,int line_count, char* name){
   table_add(macro_table,name,full_string,0);
 }
 
-int pre_proc(const char* filename){
+int pre_proc(const char* filename, int* continue_flag){
   FILE *as_file;
   FILE *am_file;
   char line[LINE_SIZE];
@@ -60,6 +60,7 @@ int pre_proc(const char* filename){
   as_file = fopen(as_filename,"r");
   if (as_file == NULL){
     printf("Error opening file: %s, process aborted\n",as_filename);
+    *continue_flag = FALSE;
     return 0;
   }
   am_file = fopen(am_filename,"w");

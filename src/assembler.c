@@ -82,13 +82,21 @@ void create_entry_file(char* filename, Node* entry_list){
 void assemble(char* filename){
   FirstPassPack fpp;
   SecondPassPack spp;
-  int preproc_flag;
-  preproc_flag=pre_proc(filename);
-  if(!preproc_flag){
+  int continue_flag = TRUE;
+  pre_proc(filename,&continue_flag);
+  if(!continue_flag){
     return;
   }
-  fpp = first_pass(filename);
-  spp = second_pass(fpp, filename); 
+  fpp = first_pass(filename,&continue_flag);
+  if(!continue_flag){
+    printf("process aborted\n");
+    return;
+  }
+  spp = second_pass(fpp, filename,&continue_flag);
+  if(!continue_flag){
+    printf("process aborted\n");
+    return;
+  }
   create_ob_file(filename,spp.instruction_list,spp.data_list,spp.ICF,spp.DCF);
   create_ext_file(filename, spp.external_list);
   create_entry_file(filename,spp.entry_list);

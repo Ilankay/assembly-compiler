@@ -1,6 +1,20 @@
 #ifndef FIRST_PASS_H
 #define FIRST_PASS_H
 
+/**
+ * @file first_pass.h
+ * @brief this is the first pass the assembler does on the assembly code
+ *
+ * Detailed description:
+ * the assembler follows the skeleton algorithm in the assignment, it returns a pack that includes:
+ * a symbol table - hash map
+ * instruction and data lists - linked lists
+ * ICF, DCF, ints
+ * 
+ * @author Ilan Kayesar
+ * @date 1.4.25
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,7 +53,7 @@ int is_valid_symbol(const char* word);
  * @param arg2 Second argument.
  * @return Updated instruction counter after storing the instruction.
  */
-int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2,int line_number);
+int store_instruction(Node* instruction_list, int IC, char* inst, char* arg1, char* arg2,int line_number,int* continue_flag);
 
 /**
  * Parses and stores data values from a .data directive line into the data list.
@@ -69,7 +83,7 @@ int store_string(Node* data_list, char* line, int DC);
  * @param IC Address to associate with the symbol.
  * @param type Section type (e.g., .data, .code, .external).
  */
-void store_symbol(Table t, char* symbol, int IC, char* type,int line_num);
+void store_symbol(Table t, char* symbol, int IC, char* type,int line_num, int* continue_flag);
 
 /**
  * Performs the first pass over an assembly source file.
@@ -78,6 +92,6 @@ void store_symbol(Table t, char* symbol, int IC, char* type,int line_num);
  * @param filename Name of the preprocessed assembly file.
  * @return Struct containing results of the first pass.
  */
-FirstPassPack first_pass(char* filename);
+FirstPassPack first_pass(char* filename, int* continue_flag);
 
 #endif /** FIRST_PASS_H*/

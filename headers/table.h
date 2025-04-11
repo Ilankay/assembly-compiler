@@ -11,16 +11,12 @@
  * The table is used to store key-value pairs, where the keys are strings, and the values are associated 
  * with specific data, like addresses and symbols.
  *
- * Usage:
- *    - Create a table using create_table().
- *    - Add key-value pairs with table_add().
- *    - Retrieve values with table_get().
- *    - Retrieve addresses with table_get_address().
- *    - Free memory with ll_free().
- *    - Hash table size can be adjusted via the DEFAULT_TABLE_SIZE macro.
+ * the linked lists are given a struct called TableVal as their val which contains two strings and ints which are used in various 
+ * ways inside the assembler.
  *
- * Author: [Your Name]
- * Date: [Date]
+ *
+ * Author: Ilan Kayesar
+ * Date: 2.4.25
  */
 
 #define DEFAULT_TABLE_SIZE 10      /**< Default size of the hash table */
@@ -33,9 +29,9 @@
  * @brief Key-value pair stored in the table.
  */
 typedef struct TableVal {
-    int address;  /**< Address associated with the symbol */
-    char* val;    /**< Value associated with the key (e.g., symbol type) */
-    char* key;    /**< Key used to identify the entry (e.g., symbol name) */
+    int address;  /** Address associated with the symbol */
+    char* val;    /** Value associated with the key (e.g., symbol type) */
+    char* key;    /** Key used to identify the entry (e.g., symbol name) */
     int line_num;
 } TableVal;
 
@@ -122,6 +118,15 @@ Table create_table();
  */
 int table_add(Table t, char* key, char* val, int address);
 
+/**
+ * @brief Adds a key-value pair to the hash table with a line number as well.
+ * @param t The hash table.
+ * @param key The key string.
+ * @param val The value string (e.g., symbol type).
+ * @param address The address associated with the code or symbol.
+ * @param line_num
+ */
+int table_add_line_number(Table t, char* key, char* val, int address,int line_num);
 /**
  * @brief Retrieves the value associated with a key in the hash table.
  * @param t The hash table.

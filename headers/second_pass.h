@@ -9,8 +9,8 @@
  * instructions and handling entries and external symbols. It updates the instruction 
  * list and manages the external and entry symbol lists.
  *
- * Author: [Your Name]
- * Date: [Date]
+ * Author: Ilan Kayesar
+ * Date: 2.4.25
  */
 
 /** Structs*/
@@ -35,6 +35,6 @@ typedef struct SecondPassPack {
  * @param filename The name of the assembly file to process.
  * @return A SecondPassPack structure containing the updated lists and counts.
  */
-SecondPassPack second_pass(FirstPassPack fpp, char* filename);
+SecondPassPack second_pass(FirstPassPack fpp, char* filename,int* continue_flag);
 
 #endif /** SECOND_PASS_H*/

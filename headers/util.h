@@ -1,5 +1,17 @@
 #ifndef UTIL_H
 #define UTIL_H
+
+/**
+ * @file pre_proc.h
+ * @brief [Add a short description of this header file's purpose]
+ * 
+ * Detailed description:
+ * [Provide detailed explanation of the module, usage, and purpose]
+ * 
+ * @author
+ * @date
+ */
+
 /**general constants*/
 #define ZERO 0
 #define ONE 1

@@ -8,17 +8,10 @@
 #include "../headers/pre_proc.h"
 #include "../headers/ins_parse.h"
 #include "../headers/first_pass.h"
+#include "../headers/second_pass.h"
 
-typedef struct SecondPassPack{
-  Node* instruction_list;
-  Node* external_list;
-  Node* data_list;
-  Node* entry_list;
-  int ICF;
-  int DCF;
-} SecondPassPack;
 
-SecondPassPack second_pass(FirstPassPack fpp,char* filename){
+SecondPassPack second_pass(FirstPassPack fpp,char* filename,int* continue_flag){
   char* instruction;
   char am_filename[MAX_FILENAME];
   FILE *am_file;
@@ -47,6 +40,7 @@ SecondPassPack second_pass(FirstPassPack fpp,char* filename){
       address = table_get_address(fpp.symbol_table, get_word(line, ONE));
       if (address<0){
         printf("Line: %d, Error: not a valid symbol\n",i);
+        *continue_flag = FALSE;
       }
       else{
         tv.val = get_word(line,ONE);
@@ -60,7 +54,7 @@ SecondPassPack second_pass(FirstPassPack fpp,char* filename){
   curr = fpp.instruction_list;
   while(curr->next != NULL){
     if(strlen(curr->val.val) != INSTRUCTION_SIZE){
-      instruction = create_arg_word_second(curr->val.val,curr->val.address,fpp.symbol_table,curr->val.line_num);
+      instruction = create_arg_word_second(curr->val.val,curr->val.address,fpp.symbol_table,curr->val.line_num,continue_flag);
       if(instruction[INSTRUCTION_SIZE-1]=='1'){
         tv.val = (curr->val.val);
         tv.address = curr->val.address;

@@ -69,7 +69,7 @@ void fill_zeros(char* arr, int amnt){
   return;
 }
 
-char* create_first_word(char* command,char* arg1,char* arg2,int line_number){
+char* create_first_word(char* command,char* arg1,char* arg2,int line_number, int* continue_flag){
   char* instruction;
   int opecode;
   int funct;
@@ -94,7 +94,6 @@ char* create_first_word(char* command,char* arg1,char* arg2,int line_number){
     }
   }
   if(opecode==-1){
-    printf("line: %d ,Error: Invalid instruction\n",line_number);
     return instruction;
   }
   convert_to_bits(instruction, opecode,OPECODE_SIZE);
@@ -116,6 +115,7 @@ char* create_first_word(char* command,char* arg1,char* arg2,int line_number){
       oparg2 = get_operator(arg1);
     if (dest[oparg2]==0){
       printf("line: %d, Error: invalid operator for second instruction\n", line_number);
+      *continue_flag=FALSE;
       return instruction;
     }
     convert_to_bits(&instruction[REG1_INDEX+INS_REG_SIZE],oparg2,OPERATION_SIZE);
@@ -128,6 +128,7 @@ char* create_first_word(char* command,char* arg1,char* arg2,int line_number){
   oparg1 = get_operator(arg1);
   if (origin[oparg1]==0){
     printf("line: %d, Error: invalid operator for first instruction\n", line_number);
+    *continue_flag=FALSE;
     return instruction;
   }
   convert_to_bits(&instruction[REG1_INDEX],oparg1,OPERATION_SIZE);
@@ -138,6 +139,7 @@ char* create_first_word(char* command,char* arg1,char* arg2,int line_number){
   oparg2 = get_operator(arg2);
   if (dest[oparg2]==0){
     printf("line: %d, Error: invalid operator for second instruction\n", line_number);
+    *continue_flag=FALSE;
     return instruction;
   }
   convert_to_bits(&instruction[REG1_INDEX+INS_REG_SIZE],oparg2,OPERATION_SIZE);
@@ -179,7 +181,7 @@ char* create_arg_word_first(char* arg){
   return instruction;
 }
 
-char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_number){
+char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_number,int* continue_flag){
   char* instruction;
   int oparg;
   int num;
@@ -196,6 +198,7 @@ char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_num
       num = table_get_address(symbol_table, arg);
       if(num<0){
         printf("Line: %d, Error: not a known symbol\n",line_number);
+        *continue_flag=FALSE;
       }
       type = table_get(symbol_table, arg);
       if (strcmp(type,EXTERN)==0){
@@ -215,6 +218,7 @@ char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_num
       num = table_get_address(symbol_table, &arg[1]);
       if(num<0){
         printf("Line: %d, Error: not a known symbol\n",line_number);
+        *continue_flag=FALSE;
       }
       num = (num+ONE)-IC;
       instruction[INSTRUCTION_SIZE-ONE]=CHAR_ZERO;

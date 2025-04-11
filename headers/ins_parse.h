@@ -2,6 +2,20 @@
 #ifndef INS_PARSE_H
 #define INS_PARSE_H
 
+/**
+ * @file ins_parse.h
+ * @brief this is a module for converting assembly instructions into machine code.
+ *
+ * Detailed description:
+ * I divided the instruction parsing into three main functions:
+ * build first word - which builds the first word which definitly exists for every instruction.
+ * build arg word first - which builds the words for immmidiate arguments or tells the assembler to save a spot for the second pass.
+ * build arg word second - which builds the words for arguments that can only be built in the second pass.
+ *
+ * @author Ilan Kayesar
+ * @date 1.4.25
+ */
+
 /** --- Character Identifiers ---*/
 #define IMM_ID '#'      /** Immediate addressing*/
 #define REL_ID '&'      /** Relative addressing*/
@@ -119,7 +133,7 @@ void fill_zeros(char* arr, int amnt);
  * @param arg2 The second operand.
  * @return A newly allocated string representing the instruction word in binary.
  */
-char* create_first_word(char* command, char* arg1, char* arg2,int line_number);
+char* create_first_word(char* command, char* arg1, char* arg2,int line_number,int* continue_flag);
 
 /**
  * @brief Creates a word for an argument in the first pass(for immediate addressing).
@@ -143,6 +157,6 @@ int is_instruction(char* inst);
  * @param line_number the current line number
  * @return A newly allocated string representing the instruction word in binary.
  */
-char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_number);
+char* create_arg_word_second(char* arg, int IC, Table symbol_table, int line_number,int* continue_flag);
 
 #endif 

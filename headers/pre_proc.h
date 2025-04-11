@@ -4,13 +4,13 @@
 
 /**
  * @file pre_proc.h
- * @brief [Add a short description of this header file's purpose]
- * 
+ * @brief this module is doing the pre processing for the document i.e removing whitespace and expanding macros
+ *
  * Detailed description:
- * [Provide detailed explanation of the module, usage, and purpose]
- * 
- * @author
- * @date
+ * the module goes through the entire as file assuming that the macros are defined properly as described in the assignment and 
+ * saves all given macros in a hash table, it then expands the macros when it sees them.
+ * @author Ilan Kayesar
+ * @date 2.4.25
  */
 
 #include "../headers/table.h"
@@ -52,6 +52,6 @@ void add_macro(Table macro_table, Node* line_list, int line_count, char* name);
  * @param filename The path to the .as file.
  * @return int 0 on success, non-zero on failure.
  */
-int pre_proc(const char* filename);
+int pre_proc(const char* filename, int* continue_flag);
 
 #endif /** PRE_PROC_H*/
